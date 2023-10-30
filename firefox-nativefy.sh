@@ -99,7 +99,7 @@ function create_desktop_file() {
   local name="$2"
   local name_unspaced="$3"
   local icon="$4"
-  local desktop="$HOME/.local/share/applications/$name.desktop"
+  local desktop="$HOME/.local/share/applications/$name_unspaced.desktop"
 
   # Create desktop file
   mkdir -p "$(dirname "$desktop")"
@@ -110,10 +110,11 @@ Version=1.0
 Name=$name
 Comment=$name, nativefied from $url using firefox-nativefy.sh
 # Both --name and --class are required for both Wayland and X11 to think that this is its own app, rather than being grouped with Firefox.
-Exec=$(which firefox) --name $name_unspaced --class $name_unspaced --new-instance -P "$name_unspaced" -url "$url"
+Exec=$(which firefox) --name "$name_unspaced" --class "$name_unspaced" --new-instance -P "$name_unspaced" -url "$url"
 Icon=$icon
 Categories=Network
 Terminal=false
+# StartupWMClass links the desktop file to the window, so that the window manager knows which app the window belongs to.
 StartupWMClass=$name_unspaced
 EOF
 }
