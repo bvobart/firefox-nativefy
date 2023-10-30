@@ -1,10 +1,24 @@
 #!/bin/bash
-# Use Firefox to create a "native" app from a website
-# Usage: firefox-nativefy.sh <url> [name] [--icon <icon-file>]
-# Example: firefox-nativefy.sh https://web.whatsapp.com/ "WhatsApp Desktop"
 
 set -euo pipefail
 # cd "$(dirname "$0")"
+
+version="0.1.0"
+
+function print_help() {
+  echo "firefox-nativefy.sh v$version"
+  echo "source: https://github.com/bvobart/firefox-nativefy"
+  echo
+  echo "Turn a website into a \"native\" application using Firefox."
+  echo
+  echo "Usage: firefox-nativefy.sh <url> [name] [--icon <icon>]"
+  echo "Where:"
+  echo "  - <url> is the URL of the website to nativefy"
+  echo "  - [name] is the name of the app (optional, can be inferred from URL in some cases, defaults to website hostname)"
+  echo "  - --icon <icon> is the icon to use (optional, can be inferred from name in some cases, defaults to Firefox icon). Can be an icon name, e.g. firefox, or an absolute path, e.g. /home/user/.local/share/icons/custom.png"
+  echo
+  echo "Example: firefox-nativefy.sh https://web.whatsapp.com/ \"WhatsApp Desktop\""
+}
 
 #--------------------------------------------------------------------------------------------------
 
@@ -123,22 +137,34 @@ EOF
 
 # Main function
 function main() {
-  local url="$1"
+  local url="${1:-}"
   local name="$(find_name "$url" "${2:-}")"
   local name_unspaced="$(echo "$name" | sed 's/ //g')"
-  local icon="$(find_icon "$name" "${3:-}")"
-  local desktop="$HOME/.local/share/applications/$name.desktop"
+  # remove url and name from arguments, if given.
+  [ $# -gt 0 ] && shift;
+  [ $# -gt 0 ] && shift;
 
-  # Validate arguments
+  local icon
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --icon)
+        icon="$(find_icon "$name" "${2:-}")"
+        shift
+        ;;
+    esac
+    shift
+  done
+
   if [ -z "$url" ] || [ "$url" == "--help" ] || [ "$url" == "-h" ] || [ "$url" == "help" ]; then
-    echo "Usage: firefox-nativefy.sh <url> [name]"
+    print_help
     exit 1
   fi
 
-  if [ -z "$name" ]; then
-    name="$(echo "$url" | sed 's/.*\/\///' | sed 's/\..*//')"
+  if [ -z "${icon:-}" ]; then
+    icon="$(find_icon "$name" "")"
   fi
 
+  local desktop="$HOME/.local/share/applications/$name.desktop"
   if [ -f "$desktop" ]; then
     echo "Error: application desktop file already exists: $desktop"
     echo "> Overwrite? (y/n)"
