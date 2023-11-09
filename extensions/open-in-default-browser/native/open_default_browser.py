@@ -79,6 +79,8 @@ def install():
       file.write(
         json.dumps(manifest, indent=2, separators=(',', ': '), sort_keys=True).replace('  ', '\t') + '\n'
       )
+    
+    print('Installed open_default_browser native extension for', browser, 'at', location)
 
 #--------------------------------------------------------------------------------------------------
 
