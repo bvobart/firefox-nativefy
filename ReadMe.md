@@ -61,4 +61,14 @@ Then the unspaced name is `WhatsAppDesktop`.
 
 ## Credits
 
-Thanks to Reddit user LasterCow and his [Firetron](https://pastebin.com/nKsqbysD) script for the inspiration for the basics of this script.
+Thanks to:
+- Reddit user LasterCow and his [Firetron](https://pastebin.com/nKsqbysD) script for the inspiration for the basics of this script.
+- Firefox Extension [Open With](https://github.com/darktrojan/openwith/) for some inspiration on how to write a Firefox extension that will open links in a different browser.
+
+## TODO:
+
+- ensure external links get opened in user's default browser (even if this is Firefox with a different profile)
+  - TODO: I wrote an extension which opens external links in the default browser. I've tested that it works. Now just need to package & install it during firefox-nativefy installation (including the native component).
+  - TODO: if needed, ensure that only external links are opened in the default browser, not internal links (useful for Notion, probably).
+- maybe allow multiple tabs? tab bar should become visible when >= 2 tabs open
+- remove the -14px margin.
