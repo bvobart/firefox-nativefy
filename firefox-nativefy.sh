@@ -1,9 +1,10 @@
 #!/bin/bash
 
 set -euo pipefail
-# cd "$(dirname "$0")"
 
-version="0.1.0"
+version="0.2.0"
+
+script_path="$(dirname "$0")"
 
 function print_help() {
   echo "firefox-nativefy.sh v$version"
@@ -79,6 +80,19 @@ function find_icon() {
 
 #--------------------------------------------------------------------------------------------------
 
+function install_open_in_default_browser_extension() {
+  local profile_path="$1"
+  local firefox_extensions_path="$profile_path/extensions"
+  local extensions_dir="$script_path/extensions"
+
+  python3 "$extensions_dir/open-in-default-browser/native/open_default_browser.py" install
+
+  mkdir -p "$firefox_extensions_path"
+  cp "$extensions_dir/open-in-default-browser@example.org.xpi" "$firefox_extensions_path"
+
+  echo "Installed Firefox extension to open external links in default browser"
+}
+
 function setup_firefox_profile() {
   local name="$1"
 
@@ -104,6 +118,9 @@ function setup_firefox_profile() {
 #navigator-toolbox {visibility: collapse;}
 browser {margin-right: -14px; margin-bottom: -14px;}
 EOF
+
+  # Install extension to open external links in default browser
+  install_open_in_default_browser_extension "$profile_path"
 }
 
 #--------------------------------------------------------------------------------------------------
@@ -181,6 +198,7 @@ function main() {
   setup_firefox_profile "$name_unspaced"
   echo "> Creating desktop file..."
   create_desktop_file "$url" "$name" "$name_unspaced" "$icon"
+  echo
   echo "> Done!"
 }
 

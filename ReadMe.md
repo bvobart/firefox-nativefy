@@ -36,12 +36,25 @@ or
 ./firefox-nativefy.sh --help
 ```
 
+Now you can launch your nativefied application as you would with any other installed application.
+
+> NOTE: the extension to launch external links in the default browser won't be active yet the first time you launch your newly nativefied application (unless you have already nativefied it previously).
+> This is a minor annoyance and might in fact be useful for SSO logins.
+
+### Updating
+
+If `firefox-nativefy.sh` has updated since you've nativefied your application, simply run the same nativefication command as you originally did.
+Running `firefox-nativefy.sh` a second time for the same URL and application name will only overwrite the application shortcut and update what is necessary in the Firefox profile.
+
+Your nativefied application will update itself automatically as it is still basically just a website running in a browser.
+
 ## How it works
 
 `firefox-nativefy.sh` works by creating a custom Firefox profile for the application that you want to nativefy,
 and applies some customisations to the profile to hide Firefox' usual UI.
-Then it creates a `.desktop` file in your user's applications folder to launch a new instance of Firefox with that profile
-(plus some additional tweaks to get the application icon and taskbar grouping showing correctly).
+It also installs an extension in the custom profile so that all external links are opened in your default web browser.
+
+Then it creates an application shortcut (`.desktop` file) in your user's applications folder to launch a new instance of Firefox with that custom profile.
 
 That's it. It's that simple.
 
@@ -49,14 +62,14 @@ That's it. It's that simple.
 
 ```sh
 # Remove the application shortcut.
-rm ~/.local/share/applications/NAME_UNSPACED.desktop
+rm ~/.local/share/applications/$NAME_UNSPACED.desktop
 
 # Remove the Firefox profile
 firefox -P # opens Firefox' profile manager
 # Select the profile with the unspaced name of the app, then click 'Delete Profile ...' and click 'Delete Files'
 ```
 
-`NAME_UNSPACED` is the name of the application, with all spaced removed. E.g. let's say we nativefied `web.whatsapp.com` as `WhatsApp Desktop`.
+`$NAME_UNSPACED` is the name of the application, with all spaced removed. E.g. let's say we nativefied `web.whatsapp.com` as `WhatsApp Desktop`.
 Then the unspaced name is `WhatsAppDesktop`.
 
 ## Credits
@@ -67,8 +80,5 @@ Thanks to:
 
 ## TODO:
 
-- ensure external links get opened in user's default browser (even if this is Firefox with a different profile)
-  - TODO: I wrote an extension which opens external links in the default browser. I've tested that it works. Now just need to package & install it during firefox-nativefy installation (including the native component).
-  - TODO: if needed, ensure that only external links are opened in the default browser, not internal links (useful for Notion, probably).
 - maybe allow multiple tabs? tab bar should become visible when >= 2 tabs open
 - remove the -14px margin.
