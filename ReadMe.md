@@ -81,4 +81,3 @@ Thanks to:
 ## TODO:
 
 - maybe allow multiple tabs? tab bar should become visible when >= 2 tabs open
-- remove the -14px margin.

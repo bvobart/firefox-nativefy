@@ -116,7 +116,6 @@ function setup_firefox_profile() {
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 #TabsToolbar {visibility: collapse;}
 #navigator-toolbox {visibility: collapse;}
-browser {margin-right: -14px; margin-bottom: -14px;}
 EOF
 
   # Install extension to open external links in default browser
