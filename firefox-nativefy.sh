@@ -2,9 +2,25 @@
 
 set -euo pipefail
 
-version="0.2.0"
+version="0.2.2"
 
 script_path="$(dirname "$0")"
+
+# Default names for nativefied web applications by URL hostname
+declare -A known_names=(
+  ["web.whatsapp.com"]="WhatsApp Desktop"
+  ["web.telegram.org"]="Telegram Desktop"
+  ["notion.so"]="Notion"
+  ["soundcloud.com"]="SoundCloud"
+)
+
+# Default icons for nativefied web applications by URL hostname
+declare -A known_icons=(
+  ["web.whatsapp.com"]="whatsapp"
+  ["web.telegram.org"]="telegram"
+  ["notion.so"]="notion-app"
+  ["soundcloud.com"]="soundcloud"
+)
 
 function print_help() {
   echo "firefox-nativefy.sh v$version"
@@ -12,10 +28,10 @@ function print_help() {
   echo
   echo "Turn a website into a \"native\" application using Firefox."
   echo
-  echo "Usage: firefox-nativefy.sh <url> [name] [--icon <icon>]"
+  echo "Usage: firefox-nativefy.sh <url> [--name <name>] [--icon <icon>]"
   echo "Where:"
   echo "  - <url> is the URL of the website to nativefy"
-  echo "  - [name] is the name of the app (optional, can be inferred from URL in some cases, defaults to website hostname)"
+  echo "  - --name [name] is the name of the app (optional, can be inferred from URL in some cases, defaults to website hostname)"
   echo "  - --icon <icon> is the icon to use (optional, can be inferred from name in some cases, defaults to Firefox icon). Can be an icon name, e.g. firefox, or an absolute path, e.g. /home/user/.local/share/icons/custom.png"
   echo
   echo "Example: firefox-nativefy.sh https://web.whatsapp.com/ \"WhatsApp Desktop\""
@@ -39,12 +55,6 @@ function find_name() {
   # strip https:// and www. and path from URL
   local hostname="$(parse_hostname "$url")"
 
-  declare -A known_names=(
-    ["web.whatsapp.com"]="WhatsApp Desktop"
-    ["web.telegram.org"]="Telegram Desktop"
-    ["notion.so"]="Notion"
-  )
-
   if [ -n "${known_names[$hostname]+is_defined}" ]; then
     echo "${known_names[$hostname]}"
     return
@@ -56,7 +66,7 @@ function find_name() {
 #--------------------------------------------------------------------------------------------------
 
 function find_icon() {
-  local name="$1"
+  local url="$1"
   local icon="$2"
 
   if [ -n "$icon" ]; then
@@ -64,14 +74,8 @@ function find_icon() {
     return
   fi
 
-  declare -A known_icons=(
-    ["WhatsApp Desktop"]="whatsapp"
-    ["Telegram Desktop"]="telegram"
-    ["Notion"]="notion-desktop"
-  )
-
-  if [ -n "${known_icons[$name]+is_defined}" ]; then
-    echo "${known_icons[$name]}"
+  if [ -n "${known_icons[$url]+is_defined}" ]; then
+    echo "${known_icons[$url]}"
     return
   fi
 
@@ -153,33 +157,48 @@ EOF
 
 # Main function
 function main() {
-  local url="${1:-}"
-  local name="$(find_name "$url" "${2:-}")"
-  local name_unspaced="$(echo "$name" | sed 's/ //g')"
-  # remove url and name from arguments, if given.
-  [ $# -gt 0 ] && shift;
-  [ $# -gt 0 ] && shift;
-
+  local url
+  local name
+  local name_unspaced
   local icon
-  while [ $# -gt 0 ]; do
-    case "$1" in
-      --icon)
-        icon="$(find_icon "$name" "${2:-}")"
-        shift
-        ;;
-    esac
-    shift
-  done
 
+  url="${1:-}"
   if [ -z "$url" ] || [ "$url" == "--help" ] || [ "$url" == "-h" ] || [ "$url" == "help" ]; then
     print_help
     exit 1
   fi
+  shift
 
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --name)
+        name="$(find_name "$url" "${2:-}")"
+        name_unspaced="$(echo "$name" | sed 's/ //g')"
+        shift
+        ;;
+    esac
+
+    case "$1" in
+      --icon)
+        icon="$(find_icon "$url" "${2:-}")"
+        shift
+        ;;
+    esac
+
+    shift
+  done
+
+  if [ -z "${name:-}" ]; then
+    name="$(find_name "$url" "")"
+    name_unspaced="$(echo "$name" | sed 's/ //g')"
+  fi
   if [ -z "${icon:-}" ]; then
-    icon="$(find_icon "$name" "")"
+    icon="$(find_icon "$url" "")"
   fi
 
+  echo "> Nativefying $url as $name with icon $icon"
+  echo
+  
   local desktop="$HOME/.local/share/applications/$name.desktop"
   if [ -f "$desktop" ]; then
     echo "Error: application desktop file already exists: $desktop"
@@ -191,8 +210,6 @@ function main() {
     echo
   fi
 
-  echo "> Nativefying $url as $name"
-  echo
   echo "> Setting up Firefox profile..."
   setup_firefox_profile "$name_unspaced"
   echo "> Creating desktop file..."

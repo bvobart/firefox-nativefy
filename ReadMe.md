@@ -19,14 +19,14 @@ or:
 
 ```sh
 # Supply a custom name for the to-be-nativefied application
-./firefox-nativefy.sh web.whatsapp.com "Custom Name"
+./firefox-nativefy.sh web.whatsapp.com --name "Custom Name"
 ```
 
 or:
 
 ```sh
 # Supply a custom icon after the name
-./firefox-nativefy.sh web.whatsapp.com "Custom Name" --icon "custom-icon"
+./firefox-nativefy.sh web.whatsapp.com --name "Custom Name" --icon "custom-icon"
 ```
 
 or 
